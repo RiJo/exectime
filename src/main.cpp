@@ -7,20 +7,20 @@
 #include <future>
 #include <chrono>
 
-void print_usage(const std::string &application) {
+void print_usage() {
     std::cout << "usage: " << PROGRAM_NAME << " [--color] [i <x>] <command>" << std::endl;
     std::cout << std::endl;
     std::cout << "Execute a given command and measure the time consumed." << std::endl;
     std::cout << std::endl;
     std::cout << "  --color     Colorized output for easier interpretation." << std::endl;
     std::cout << "  --help      Print this help and exit." << std::endl;
-    std::cout << "  -i          Number of iterations to execute the command. Default is 1." << std::endl;
+    std::cout << "  -i <x>      Number of iterations to execute the command. Default is 1." << std::endl;
     std::cout << "  --version   Print out version information." << std::endl;
     std::cout << std::endl;
     std::cout << "                  Copyright (C) " PROGRAM_YEAR ". Licensed under " PROGRAM_LICENSE "." << std::endl;
 }
 
-void print_version(const std::string &application) {
+void print_version() {
     std::cout << PROGRAM_NAME << " v" PROGRAM_VERSION ", built " __DATE__ " " __TIME__ "." << std::endl;
 }
 
@@ -61,11 +61,11 @@ int main(int argc, const char *argv[]) {
         }
 
         if(arg.key == "--help") {
-            print_usage(std::string(argv[0]));
+            print_usage();
             return 0;
         }
         else if(arg.key == "--version" || arg.key == "-v") {
-            print_version(std::string(argv[0]));
+            print_version();
             return 0;
         }
         else if(arg.key == "--color") {
