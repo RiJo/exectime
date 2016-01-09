@@ -55,8 +55,16 @@ int main(int argc, const char *argv[]) {
     bool colorize {false};
     unsigned int iterations {1};
     bool skip_next_arg {false};
+    bool command_detected {false};
 
     for(const auto &arg: console::parse_args(argc, argv)) {
+        if (command_detected) {
+            if (arg.value.length() > 0)
+                command.push_back(arg.key + "=" + arg.value);
+            else
+                command.push_back(arg.key);
+            continue;
+        }
         if(skip_next_arg) {
             skip_next_arg = false;
             continue;
@@ -78,7 +86,11 @@ int main(int argc, const char *argv[]) {
             skip_next_arg = true;
         }
         else {
-            command.push_back(arg.key); // TODO: may parse exec args wrong
+            if (arg.value.length() > 0)
+                command.push_back(arg.key + "=" + arg.value);
+            else
+                command.push_back(arg.key);
+            command_detected = true;
         }
     }
 
