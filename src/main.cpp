@@ -90,19 +90,20 @@ int main(int argc, const char *argv[]) {
         //~ columns = temp.cols;
     //~ }
 
+    std::vector<std::chrono::microseconds> execution_times;
     std::string foo = join(command, " ");
     for (unsigned int iteration = 0; iteration < iterations; iteration++) {
     #ifdef DEBUG
         std::cout << PROGRAM_NAME <<  ": Iteration " << (iteration + 1) << "/" << iterations << std::endl;
-        std::cout << PROGRAM_NAME <<  ": Executing \"" << foo << "\"..." << std::endl;
     #endif
-        unsigned long elapsed_ns {0};
+        std::chrono::microseconds elapsed;
         std::future<exec_result_t> future = std::async(std::launch::async, [&] {
             auto begin = std::chrono::high_resolution_clock::now();
             exec_result_t result = exec(foo);
             auto end = std::chrono::high_resolution_clock::now();
-            elapsed_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end-begin).count();
-            return result;
+            elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end-begin);
+            execution_times.push_back(elapsed);
+            return  result;
 
         });
 
@@ -110,14 +111,44 @@ int main(int argc, const char *argv[]) {
         exec_result_t result { future.get() };
 
     #ifdef DEBUG
-        std::cout << PROGRAM_NAME << ": Execution completed with code " << result.exit_code << std::endl;
+        std::cout << PROGRAM_NAME << ": Execution completed with code " << result.exit_code << ", took " << (elapsed.count() / 1000.0) << "ms" << std::endl;
     #endif
 
     #ifdef DEBUG
         std::cout << PROGRAM_NAME << ": Output" << std::endl;
         std::cout << result.stdout << std::endl;
     #endif
-        std::cout << "took " << (elapsed_ns / 1000.0 / 1000.0) << "ms" << std::endl;
+
     }
+
+
+    if (execution_times.size() == 0) {
+        std::cout << "Nothing..." << std::endl;
+        return 0;
+    }
+
+
+    // Statistics
+    unsigned long max {std::numeric_limits<unsigned long>::min()};
+    unsigned long min {std::numeric_limits<unsigned long>::max()};
+    unsigned long avg {0};
+    for (const auto &execution_time: execution_times) {
+        unsigned long elapsed = execution_time.count();
+        if (elapsed < min)
+            min = elapsed;
+        if (elapsed > max)
+            max = elapsed;
+        avg += elapsed;
+    }
+    avg /= execution_times.size();
+
+    std::cout << std::endl;
+#ifdef DEBUG
+    std::cout << PROGRAM_NAME << ": cmd \"" << foo << "\"" << std::endl;
+#endif
+    std::cout << PROGRAM_NAME << ": min " << (min / 1000.0) << "ms" << std::endl;
+    std::cout << PROGRAM_NAME << ": max " << (max / 1000.0) << "ms" << std::endl;
+    std::cout << PROGRAM_NAME << ": avg " << (avg / 1000.0) << "ms" << std::endl;
+
     return 0;
 }
