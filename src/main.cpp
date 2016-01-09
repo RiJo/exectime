@@ -150,6 +150,7 @@ int main(int argc, const char *argv[]) {
     unsigned long avg {0}; // mean
     unsigned long var {0}; // variance
     unsigned long sd {0}; // standard deviation
+    unsigned long sdc {0}; // standard deviation item count
 
     unsigned long med {0}; // median
     if (size  % 2 == 0)
@@ -173,9 +174,18 @@ int main(int argc, const char *argv[]) {
         var += std::pow(elapsed - avg, 2);
     }
     var /= size;
-    var = std::sqrt(var);
 
     sd = std::sqrt(var);
+
+    for (const auto &execution_time: execution_times) {
+        unsigned long elapsed = execution_time.count();
+
+        if (elapsed < (avg - sd))
+            continue;
+        if (elapsed > (avg + sd))
+            continue;
+        sdc++;
+    }
 
     // Dump result
     std::cout << std::endl;
@@ -186,8 +196,10 @@ int main(int argc, const char *argv[]) {
     std::cout << PROGRAM_NAME << ": max " << (max / 1000.0) << "ms" << std::endl;
     std::cout << PROGRAM_NAME << ": avg " << (avg / 1000.0) << "ms" << std::endl;
     std::cout << PROGRAM_NAME << ": med " << (med / 1000.0) << "ms" << std::endl;
-    std::cout << PROGRAM_NAME << ": var " << (var / 1000.0) << "ms" << std::endl;
+    std::cout << PROGRAM_NAME << ": var " << (var / 1000.0) << std::endl;
     std::cout << PROGRAM_NAME << ": sd  " << (sd / 1000.0) << "ms" << " (" << ((avg - sd) / 1000.0) << "-" << ((avg + sd) / 1000.0) << "ms)" << std::endl;
+    std::cout << PROGRAM_NAME << ": sdc " << sdc << " (" << ((static_cast<double>(sdc) / size) * 100.0) << "%)" << std::endl;
+
 
     // TODO: render graph(s)
     return 0;
