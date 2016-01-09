@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 #include <future>
+#include <algorithm>
+#include <cmath>
 #include <chrono>
 
 void print_usage() {
@@ -121,17 +123,28 @@ int main(int argc, const char *argv[]) {
 
     }
 
-
-    if (execution_times.size() == 0) {
+    size_t size = execution_times.size();
+    if (size == 0) {
         std::cout << "Nothing..." << std::endl;
         return 0;
     }
 
+    // Preprocess data set
+    std::sort(execution_times.begin(), execution_times.end());
 
-    // Statistics
+    // Calculate statistics
     unsigned long max {std::numeric_limits<unsigned long>::min()};
     unsigned long min {std::numeric_limits<unsigned long>::max()};
-    unsigned long avg {0};
+    unsigned long avg {0}; // mean
+    unsigned long var {0}; // variance
+    unsigned long sd {0}; // standard deviation
+
+    unsigned long med {0}; // median
+    if (size  % 2 == 0)
+        med = (execution_times[size / 2 - 1].count() + execution_times[size / 2].count()) / 2;
+    else
+        med = execution_times[size / 2].count();
+
     for (const auto &execution_time: execution_times) {
         unsigned long elapsed = execution_time.count();
         if (elapsed < min)
@@ -140,8 +153,19 @@ int main(int argc, const char *argv[]) {
             max = elapsed;
         avg += elapsed;
     }
-    avg /= execution_times.size();
+    avg /= size;
 
+    for (const auto &execution_time: execution_times) {
+        unsigned long elapsed = execution_time.count();
+
+        var += std::pow(elapsed - avg, 2);
+    }
+    var /= size;
+    var = std::sqrt(var);
+
+    sd = std::sqrt(var);
+
+    // Dump result
     std::cout << std::endl;
 #ifdef DEBUG
     std::cout << PROGRAM_NAME << ": cmd \"" << foo << "\"" << std::endl;
@@ -149,6 +173,10 @@ int main(int argc, const char *argv[]) {
     std::cout << PROGRAM_NAME << ": min " << (min / 1000.0) << "ms" << std::endl;
     std::cout << PROGRAM_NAME << ": max " << (max / 1000.0) << "ms" << std::endl;
     std::cout << PROGRAM_NAME << ": avg " << (avg / 1000.0) << "ms" << std::endl;
+    std::cout << PROGRAM_NAME << ": med " << (med / 1000.0) << "ms" << std::endl;
+    std::cout << PROGRAM_NAME << ": var " << (var / 1000.0) << "ms" << std::endl;
+    std::cout << PROGRAM_NAME << ": sd  " << (sd / 1000.0) << "ms" << " (" << ((avg - sd) / 1000.0) << "-" << ((avg + sd) / 1000.0) << "ms)" << std::endl;
 
+    // TODO: render graph(s)
     return 0;
 }
