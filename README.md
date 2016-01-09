@@ -1,2 +1,32 @@
-# exectime
-[c++] Time measurer for specific command used for performance testing
+exectime
+========
+
+Console tool which executes a specific command while measuring execution time. The result is summarized using statistical calculations which can be used for performance testing or similar.
+
+### Status
+Current stable version: none.
+
+## Background
+To be able to test performance of dus (https://github.com/RiJo/dus) in parallel mode I was missing a quick and easy tool to calculate statistics of time consumed by a single application. Previously I was using bash's built-in `time` command. But I had to summarize the statistics (standard deviation etc) by myself and it's pretty cumbersome. Why do the math by oneself when the computer makes it faster and more consistently?
+
+The intention is to also make this program a regression testing tool. One should be able to save the statistics from one run (old version) and compare it to another one (new version) to see if there's any difference in execution performance.
+
+## Screenshot
+![exectime preview](screenshot.png)
+
+## Usage
+    // Time of a single command (oneshot)
+    $ exectime sleep 1
+
+    // Time statistics of command executed multiple times (here 100)
+    $ exectime -i 100 "find / -name 'foo'"
+
+## Compilation
+Everything is written in C++14 and is simply compiled, installed and uninstalled using make.
+
+## Releases
+No stable release yet...
+
+## License
+This project is licensed under GPLv3.
+
