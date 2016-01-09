@@ -82,7 +82,11 @@ int main(int argc, const char *argv[]) {
             colorize = true;
         }
         else if (arg.key == "-i" && arg.next) {
-            iterations = std::stoi(arg.next->key); // TODO: sanity check
+            int temp = std::stoi(arg.next->key); // TODO: sanity check
+            if (temp >= 1)
+                iterations = temp;
+            else
+                std::cerr << console::color::red << PROGRAM_NAME << ": Invalid iteration argument, ignoring: " << temp << console::color::reset << std::endl;
             skip_next_arg = true;
         }
         else {
@@ -104,8 +108,14 @@ int main(int argc, const char *argv[]) {
         //~ columns = temp.cols;
     //~ }
 
+    if (command.size() == 0) {
+        std::cerr << console::color::red << PROGRAM_NAME << ": No command given" << console::color::reset << std::endl;
+        return 1;
+    }
+    std::string cmd = join(command, " ");
+
     std::vector<std::chrono::microseconds> execution_times;
-    std::string foo = join(command, " ");
+
     for (unsigned int iteration = 0; iteration < iterations; iteration++) {
     #ifdef DEBUG
         std::cout << PROGRAM_NAME <<  ": Iteration " << (iteration + 1) << "/" << iterations << std::endl;
@@ -113,7 +123,7 @@ int main(int argc, const char *argv[]) {
         std::chrono::microseconds elapsed;
         std::future<exec_result_t> future = std::async(std::launch::async, [&] {
             auto begin = std::chrono::high_resolution_clock::now();
-            exec_result_t result = exec(foo);
+            exec_result_t result = exec(cmd);
             auto end = std::chrono::high_resolution_clock::now();
             elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end-begin);
             execution_times.push_back(elapsed);
@@ -137,8 +147,8 @@ int main(int argc, const char *argv[]) {
 
     size_t size = execution_times.size();
     if (size == 0) {
-        std::cout << "Nothing..." << std::endl;
-        return 0;
+        std::cerr << console::color::red << PROGRAM_NAME << ": No time measurements generated" << console::color::reset << std::endl;
+        return 2;
     }
 
     // Preprocess data set
@@ -188,9 +198,8 @@ int main(int argc, const char *argv[]) {
     }
 
     // Dump result
-    std::cout << std::endl;
 #ifdef DEBUG
-    std::cout << PROGRAM_NAME << ": cmd \"" << foo << "\"" << std::endl;
+    std::cout << PROGRAM_NAME << ": cmd \"" << cmd << "\"" << std::endl;
 #endif
     std::cout << PROGRAM_NAME << ": min " << (min / 1000.0) << "ms" << std::endl;
     std::cout << PROGRAM_NAME << ": max " << (max / 1000.0) << "ms" << std::endl;
@@ -198,7 +207,7 @@ int main(int argc, const char *argv[]) {
     std::cout << PROGRAM_NAME << ": med " << (med / 1000.0) << "ms" << std::endl;
     std::cout << PROGRAM_NAME << ": var " << (var / 1000.0) << std::endl;
     std::cout << PROGRAM_NAME << ": sd  " << (sd / 1000.0) << "ms" << " (" << ((avg - sd) / 1000.0) << "-" << ((avg + sd) / 1000.0) << "ms)" << std::endl;
-    std::cout << PROGRAM_NAME << ": sdc " << sdc << " (" << ((static_cast<double>(sdc) / size) * 100.0) << "%)" << std::endl;
+    std::cout << PROGRAM_NAME << ": sdc " << sdc << "/" << size << " (" << ((static_cast<double>(sdc) / size) * 100.0) << "%)" << std::endl;
 
 
     // TODO: render graph(s)
