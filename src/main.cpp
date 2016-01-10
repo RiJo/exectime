@@ -160,7 +160,9 @@ int main(int argc, const char *argv[]) {
     unsigned long avg {0}; // mean
     unsigned long var {0}; // variance
     unsigned long sd {0}; // standard deviation
-    unsigned long sdc {0}; // standard deviation item count
+    unsigned long sd1 {0}; // standard deviation item count
+    unsigned long sd2 {0}; // standard deviation item count
+    unsigned long sd3 {0}; // standard deviation item count
 
     unsigned long med {0}; // median
     if (size  % 2 == 0)
@@ -190,24 +192,27 @@ int main(int argc, const char *argv[]) {
     for (const auto &execution_time: execution_times) {
         unsigned long elapsed = execution_time.count();
 
-        if (elapsed < (avg - sd))
-            continue;
-        if (elapsed > (avg + sd))
-            continue;
-        sdc++;
+        if (elapsed >= (avg - sd) && elapsed <= (avg + sd))
+            sd1++;
+        if (elapsed >= (avg - 2 * sd) && elapsed <= (avg + 2 * sd))
+            sd2++;
+        if (elapsed >= (avg - 3 * sd) && elapsed <= (avg + 3 * sd))
+            sd3++;
     }
 
     // Dump result
 #ifdef DEBUG
     std::cout << PROGRAM_NAME << ": cmd \"" << cmd << "\"" << std::endl;
 #endif
-    std::cout << PROGRAM_NAME << ": min " << (min / 1000.0) << "ms" << std::endl;
-    std::cout << PROGRAM_NAME << ": max " << (max / 1000.0) << "ms" << std::endl;
-    std::cout << PROGRAM_NAME << ": avg " << (avg / 1000.0) << "ms" << std::endl;
-    std::cout << PROGRAM_NAME << ": med " << (med / 1000.0) << "ms" << std::endl;
-    std::cout << PROGRAM_NAME << ": var " << (var / 1000.0) << std::endl;
-    std::cout << PROGRAM_NAME << ": sd  " << (sd / 1000.0) << "ms" << " (" << ((avg - sd) / 1000.0) << "-" << ((avg + sd) / 1000.0) << "ms)" << std::endl;
-    std::cout << PROGRAM_NAME << ": sdc " << sdc << "/" << size << " (" << ((static_cast<double>(sdc) / size) * 100.0) << "%)" << std::endl;
+    std::cout << PROGRAM_NAME << ": minimum..........................." << (min / 1000.0) << "ms" << std::endl;
+    std::cout << PROGRAM_NAME << ": maximum..........................." << (max / 1000.0) << "ms" << std::endl;
+    std::cout << PROGRAM_NAME << ": average/mean......................" << (avg / 1000.0) << "ms" << std::endl;
+    std::cout << PROGRAM_NAME << ": median............................" << (med / 1000.0) << "ms" << std::endl;
+    //std::cout << PROGRAM_NAME << ": variance.........................." << (var / 1000.0) << std::endl;
+    std::cout << PROGRAM_NAME << ": std. deviation...................." << (sd / 1000.0) << "ms" << " (" << ((avg - sd) / 1000.0) << "-" << ((avg + sd) / 1000.0) << "ms)" << std::endl;
+    std::cout << PROGRAM_NAME << ": norm.distr. mean±1σ (68.27%)......" << ((static_cast<double>(sd1) / size) * 100.0) << "% (" << sd1 << "/" << size << ")" << std::endl;
+    std::cout << PROGRAM_NAME << ":             mean±2σ (95.45%)......" << ((static_cast<double>(sd2) / size) * 100.0) << "% (" << sd2 << "/" << size << ")" << std::endl;
+    std::cout << PROGRAM_NAME << ":             mean±3σ (99.73%)......" << ((static_cast<double>(sd3) / size) * 100.0) << "% (" << sd3 << "/" << size << ")" << std::endl;
 
 
     // TODO: render graph(s)
