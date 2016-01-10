@@ -39,11 +39,13 @@
 #define ANSI_COLOR_BACKGROUND_CYAN             "\x1b[1;46m"
 #define ANSI_COLOR_BACKGROUND_WHITE            "\x1b[1;47m"
 
+// TODO: move into console namespace
 struct exec_result_t {
     int exit_code;
     std::string stdout;
 };
 
+// TODO: move into console namespace
 exec_result_t exec(const std::string &command) {
     FILE* fp = popen(command.c_str(), "r");
     if (fp == nullptr)
@@ -317,6 +319,8 @@ namespace console {
                     throw std::out_of_range("Y coordinate (" + std::to_string(y) + ") is out of range (0-" + std::to_string(rows) + ").");
 
                 // TODO: implement
+                (void)c;
+                (void)sync;
                 throw std::runtime_error("write_char() is not yet implemented.");
 
                 //if (sync)
