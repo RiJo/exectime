@@ -123,13 +123,13 @@ int main(int argc, const char *argv[]) {
     std::vector<std::chrono::microseconds> execution_times;
 
     for (unsigned int iteration = 0; iteration < iterations; iteration++) {
-    #ifdef DEBUG
+#ifdef DEBUG
         std::cout << PROGRAM_NAME <<  ": Iteration " << (iteration + 1) << "/" << iterations << std::endl;
-    #endif
+#endif
         std::chrono::microseconds elapsed;
-        std::future<exec_result_t> future = std::async(std::launch::async, [&] {
+        std::future<console::exec_result_t> future = std::async(std::launch::async, [&] {
             auto begin = std::chrono::high_resolution_clock::now();
-            exec_result_t result = exec(cmd);
+            console::exec_result_t result = console::exec(cmd);
             auto end = std::chrono::high_resolution_clock::now();
             elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end-begin);
             execution_times.push_back(elapsed);
@@ -138,17 +138,16 @@ int main(int argc, const char *argv[]) {
         });
 
         future.wait();
-        exec_result_t result { future.get() };
+        console::exec_result_t result { future.get() };
 
-    #ifdef DEBUG
+#ifdef DEBUG
         std::cout << PROGRAM_NAME << ": Execution completed with code " << result.exit_code << ", took " << (elapsed.count() / 1000.0) << "ms" << std::endl;
-    #endif
+#endif
 
-    #ifdef DEBUG
+#ifdef DEBUG
         std::cout << PROGRAM_NAME << ": Output" << std::endl;
         std::cout << result.stdout << std::endl;
-    #endif
-
+#endif
     }
 
     size_t size = execution_times.size();
