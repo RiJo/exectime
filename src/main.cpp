@@ -197,11 +197,11 @@ int main(int argc, const char *argv[]) {
     for (const auto &execution_time: execution_times) {
         unsigned long elapsed = execution_time.count();
 
-        if (elapsed >= (avg - sd) && elapsed <= (avg + sd))
+        if (elapsed >= std::min(std::numeric_limits<unsigned long>::min(), avg - sd) && elapsed <= (avg + sd))
             sd1++;
-        if (elapsed >= (avg - 2 * sd) && elapsed <= (avg + 2 * sd))
+        if (elapsed >= std::min(std::numeric_limits<unsigned long>::min(), avg - 2 * sd) && elapsed <= (avg + 2 * sd))
             sd2++;
-        if (elapsed >= (avg - 3 * sd) && elapsed <= (avg + 3 * sd))
+        if (elapsed >= std::min(std::numeric_limits<unsigned long>::min(), avg - 3 * sd) && elapsed <= (avg + 3 * sd))
             sd3++;
     }
 
