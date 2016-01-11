@@ -39,34 +39,31 @@
 #define ANSI_COLOR_BACKGROUND_CYAN             "\x1b[1;46m"
 #define ANSI_COLOR_BACKGROUND_WHITE            "\x1b[1;47m"
 
-// TODO: move into console namespace
-struct exec_result_t {
-    int exit_code;
-    std::string stdout;
-};
+namespace console {
+    struct exec_result_t {
+        int exit_code;
+        std::string stdout;
+    };
 
-// TODO: move into console namespace
-exec_result_t exec(const std::string &command) {
-    FILE* fp = popen(command.c_str(), "r");
-    if (fp == nullptr)
-        throw std::runtime_error("Failed to open pipe: \"" + command + "\"");
+    exec_result_t exec(const std::string &command) {
+        FILE* fp = popen(command.c_str(), "r");
+        if (fp == nullptr)
+            throw std::runtime_error("Failed to open pipe: \"" + command + "\"");
 
-    exec_result_t result { -1, "" };
+        std::stringstream ss;
+        char buffer[32];
+        while (!feof(fp)) {
+            if (fgets(buffer, 32, fp) == nullptr)
+                continue;
+            ss << buffer;
+        }
 
-    char buffer[32];
-    while (!feof(fp)) {
-        if (fgets(buffer, 32, fp) != nullptr)
-            result.stdout += buffer;
+        int pclose_status = pclose(fp);
+        fp = nullptr;
+
+        return exec_result_t {WEXITSTATUS(pclose_status), ss.str()};
     }
 
-    int temp = pclose(fp);
-    fp = nullptr;
-
-    result.exit_code = WEXITSTATUS(temp);
-    return result;
-}
-
-namespace console {
     namespace color {
         static bool enable {true};
 
