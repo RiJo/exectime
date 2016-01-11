@@ -89,6 +89,12 @@ int main(int argc, const char *argv[]) {
                 std::cerr << console::color::red << PROGRAM_NAME << ": Invalid iteration argument, ignoring: " << temp << console::color::reset << std::endl;
             skip_next_arg = true;
         }
+        else if (arg.key[0] == '-' && !command_detected) {
+            if (arg.value.length() == 0)
+                std::cerr << console::color::red << PROGRAM_NAME << ": Unhandled argument flag: \"" << arg.key << "\"" << console::color::reset << std::endl;
+            else
+                std::cerr << console::color::red << PROGRAM_NAME << ": Unhandled argument key: \"" << arg.key << "\", value: \"" << arg.value << "\"" << console::color::reset << std::endl;
+        }
         else {
             if (arg.value.length() > 0)
                 command.push_back(arg.key + "=" + arg.value);
