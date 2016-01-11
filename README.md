@@ -4,7 +4,7 @@ exectime
 Console tool which executes a specific command while measuring execution time. The result is summarized using statistical calculations which can be used for performance testing or similar.
 
 ### Status
-Current stable version: none.
+Current stable version: v0.0.1.
 
 ## Background
 To be able to test performance of dus (https://github.com/RiJo/dus) in parallel mode I was missing a quick and easy tool to calculate statistics of time consumed by a single application. Previously I was using bash's built-in `time` command. But I had to summarize the statistics (standard deviation etc) by myself and it's pretty cumbersome. Why do the math by oneself when the computer makes it faster and more consistently?
@@ -25,7 +25,9 @@ The intention is to also make this program a regression testing tool. One should
 Everything is written in C++14 and is simply compiled, installed and uninstalled using make.
 
 ## Releases
-No stable release yet...
+### v0.0.1
+ * Print summary with minimum, maximum, average, median, standard deviation and normal distribution values
+ * Ability to define number of iterations
 
 ## License
 This project is licensed under GPLv3.
