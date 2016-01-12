@@ -168,6 +168,7 @@ int main(int argc, const char *argv[]) {
     unsigned int sd1 {0}; // standard deviation item count
     unsigned int sd2 {0}; // standard deviation item count
     unsigned int sd3 {0}; // standard deviation item count
+    double se {0}; // standard error
 
     unsigned long med {0}; // median
     if (size  % 2 == 0)
@@ -205,12 +206,15 @@ int main(int argc, const char *argv[]) {
             sd3++;
     }
 
+    se = (sd / 1000.0) / std::sqrt(size);
+
     // Dump result
 #ifdef DEBUG
     std::cout << PROGRAM_NAME << ": cmd \"" << cmd << "\"" << std::endl;
 #endif
-    std::cout << PROGRAM_NAME << ": minimum..........................." << (min / 1000.0) << "ms" << std::endl;
-    std::cout << PROGRAM_NAME << ": maximum..........................." << (max / 1000.0) << "ms" << std::endl;
+    //std::cout << PROGRAM_NAME << ": minimum..........................." << (min / 1000.0) << "ms" << std::endl;
+    //std::cout << PROGRAM_NAME << ": maximum..........................." << (max / 1000.0) << "ms" << std::endl;
+    std::cout << PROGRAM_NAME << ": range............................." << ((max - min) / 1000.0) << "ms (" << (min / 1000.0) << "-" << (max / 1000.0) << "ms)" << std::endl;
     std::cout << PROGRAM_NAME << ": average/mean......................" << (avg / 1000.0) << "ms" << std::endl;
     std::cout << PROGRAM_NAME << ": median............................" << (med / 1000.0) << "ms" << std::endl;
     //std::cout << PROGRAM_NAME << ": variance.........................." << (var / 1000.0) << std::endl;
@@ -218,6 +222,7 @@ int main(int argc, const char *argv[]) {
     std::cout << PROGRAM_NAME << ": norm.distr. mean±1σ (68.27%)......" << ((static_cast<double>(sd1) / size) * 100.0) << "% (" << sd1 << "/" << size << ")" << std::endl;
     std::cout << PROGRAM_NAME << ":             mean±2σ (95.45%)......" << ((static_cast<double>(sd2) / size) * 100.0) << "% (" << sd2 << "/" << size << ")" << std::endl;
     std::cout << PROGRAM_NAME << ":             mean±3σ (99.73%)......" << ((static_cast<double>(sd3) / size) * 100.0) << "% (" << sd3 << "/" << size << ")" << std::endl;
+    std::cout << PROGRAM_NAME << ": std.error........................." << se << std::endl;
 
 
     // TODO: render graph(s)
