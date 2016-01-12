@@ -219,10 +219,10 @@ int main(int argc, const char *argv[]) {
     std::cout << PROGRAM_NAME << ": median............................" << (med / 1000.0) << "ms" << std::endl;
     //std::cout << PROGRAM_NAME << ": variance.........................." << (var / 1000.0) << std::endl;
     std::cout << PROGRAM_NAME << ": std. deviation...................." << (sd / 1000.0) << "ms (" << ((avg - sd) / 1000.0) << "-" << ((avg + sd) / 1000.0) << "ms)" << std::endl;
-    std::cout << PROGRAM_NAME << ": norm.distr. mean±1σ (68.27%)......" << ((static_cast<double>(sd1) / size) * 100.0) << "% (" << sd1 << "/" << size << ")" << std::endl;
-    std::cout << PROGRAM_NAME << ":             mean±2σ (95.45%)......" << ((static_cast<double>(sd2) / size) * 100.0) << "% (" << sd2 << "/" << size << ")" << std::endl;
-    std::cout << PROGRAM_NAME << ":             mean±3σ (99.73%)......" << ((static_cast<double>(sd3) / size) * 100.0) << "% (" << sd3 << "/" << size << ")" << std::endl;
-    std::cout << PROGRAM_NAME << ": std.error........................." << se << std::endl;
+    std::cout << PROGRAM_NAME << ": norm. distr. mean±1σ (68.27%)....." << ((static_cast<double>(sd1) / size) * 100.0) << "% (" << sd1 << "/" << size << ")" << std::endl;
+    std::cout << PROGRAM_NAME << ":              mean±2σ (95.45%)....." << ((static_cast<double>(sd2) / size) * 100.0) << "% (" << sd2 << "/" << size << ")" << std::endl;
+    std::cout << PROGRAM_NAME << ":              mean±3σ (99.73%)....." << ((static_cast<double>(sd3) / size) * 100.0) << "% (" << sd3 << "/" << size << ")" << std::endl;
+    std::cout << PROGRAM_NAME << ": std. error........................" << se << std::endl;
 
 
     // TODO: render graph(s)
