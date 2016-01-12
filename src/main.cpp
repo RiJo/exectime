@@ -162,12 +162,12 @@ int main(int argc, const char *argv[]) {
     // Calculate statistics
     unsigned long max {std::numeric_limits<unsigned long>::min()};
     unsigned long min {std::numeric_limits<unsigned long>::max()};
-    unsigned long avg {0}; // mean
-    unsigned long var {0}; // variance
-    unsigned long sd {0}; // standard deviation
-    unsigned long sd1 {0}; // standard deviation item count
-    unsigned long sd2 {0}; // standard deviation item count
-    unsigned long sd3 {0}; // standard deviation item count
+    double avg {0}; // mean
+    double var {0}; // variance
+    double sd {0}; // standard deviation
+    unsigned int sd1 {0}; // standard deviation item count
+    unsigned int sd2 {0}; // standard deviation item count
+    unsigned int sd3 {0}; // standard deviation item count
 
     unsigned long med {0}; // median
     if (size  % 2 == 0)
@@ -197,11 +197,11 @@ int main(int argc, const char *argv[]) {
     for (const auto &execution_time: execution_times) {
         unsigned long elapsed = execution_time.count();
 
-        if (elapsed >= std::min(std::numeric_limits<unsigned long>::min(), avg - sd) && elapsed <= (avg + sd))
+        if (elapsed >= std::min(std::numeric_limits<double>::min(), avg - sd) && elapsed <= (avg + sd))
             sd1++;
-        if (elapsed >= std::min(std::numeric_limits<unsigned long>::min(), avg - 2 * sd) && elapsed <= (avg + 2 * sd))
+        if (elapsed >= std::min(std::numeric_limits<double>::min(), avg - 2 * sd) && elapsed <= (avg + 2 * sd))
             sd2++;
-        if (elapsed >= std::min(std::numeric_limits<unsigned long>::min(), avg - 3 * sd) && elapsed <= (avg + 3 * sd))
+        if (elapsed >= std::min(std::numeric_limits<double>::min(), avg - 3 * sd) && elapsed <= (avg + 3 * sd))
             sd3++;
     }
 
@@ -214,7 +214,7 @@ int main(int argc, const char *argv[]) {
     std::cout << PROGRAM_NAME << ": average/mean......................" << (avg / 1000.0) << "ms" << std::endl;
     std::cout << PROGRAM_NAME << ": median............................" << (med / 1000.0) << "ms" << std::endl;
     //std::cout << PROGRAM_NAME << ": variance.........................." << (var / 1000.0) << std::endl;
-    std::cout << PROGRAM_NAME << ": std. deviation...................." << (sd / 1000.0) << "ms" << " (" << ((avg - sd) / 1000.0) << "-" << ((avg + sd) / 1000.0) << "ms)" << std::endl;
+    std::cout << PROGRAM_NAME << ": std. deviation...................." << (sd / 1000.0) << "ms (" << ((avg - sd) / 1000.0) << "-" << ((avg + sd) / 1000.0) << "ms)" << std::endl;
     std::cout << PROGRAM_NAME << ": norm.distr. mean±1σ (68.27%)......" << ((static_cast<double>(sd1) / size) * 100.0) << "% (" << sd1 << "/" << size << ")" << std::endl;
     std::cout << PROGRAM_NAME << ":             mean±2σ (95.45%)......" << ((static_cast<double>(sd2) / size) * 100.0) << "% (" << sd2 << "/" << size << ")" << std::endl;
     std::cout << PROGRAM_NAME << ":             mean±3σ (99.73%)......" << ((static_cast<double>(sd3) / size) * 100.0) << "% (" << sd3 << "/" << size << ")" << std::endl;
