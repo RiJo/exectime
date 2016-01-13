@@ -155,23 +155,19 @@ int main(int argc, const char *argv[]) {
         return 2;
     }
 
-    std::vector<unsigned long> foo;
-    for (const auto &execution_time: execution_times) {
-        unsigned long elapsed = execution_time.count();
-        foo.push_back(elapsed);
-    }
-
-    statistics::statistics_t s = statistics::calculate(foo);
+    std::function<unsigned long (const std::chrono::microseconds &)> selector = [] (const auto &value) { return value.count(); };
+    statistics::statistics_t<unsigned long> s = statistics::calculate(execution_times, selector);
 
     double standard_deviation1 {0.0};
     double standard_deviation2 {0.0};
     double standard_deviation3 {0.0};
-    for (const auto &item: foo) {
-        if (item >= std::min(std::numeric_limits<double>::min(), s.average - s.standard_deviation) && item <= (s.average + s.standard_deviation))
+    for (const auto &item: execution_times) {
+        auto value = selector(item);
+        if (value >= std::min(std::numeric_limits<double>::min(), s.average - s.standard_deviation) && value <= (s.average + s.standard_deviation))
             standard_deviation1++;
-        if (item >= std::min(std::numeric_limits<double>::min(), s.average - 2 * s.standard_deviation) && item <= (s.average + 2 * s.standard_deviation))
+        if (value >= std::min(std::numeric_limits<double>::min(), s.average - 2 * s.standard_deviation) && value <= (s.average + 2 * s.standard_deviation))
             standard_deviation2++;
-        if (item >= std::min(std::numeric_limits<double>::min(), s.average - 3 * s.standard_deviation) && item <= (s.average + 3 * s.standard_deviation))
+        if (value >= std::min(std::numeric_limits<double>::min(), s.average - 3 * s.standard_deviation) && value <= (s.average + 3 * s.standard_deviation))
             standard_deviation3++;
     }
 
