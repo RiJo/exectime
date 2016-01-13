@@ -51,7 +51,7 @@ namespace statistics {
         s.variance /= s.items;
 
         s.standard_deviation = std::sqrt(s.variance);
-        s.standard_error = (s.standard_deviation / 1000.0) / std::sqrt(s.items);
+        s.standard_error = s.standard_deviation / std::sqrt(s.items);
 
         return s;
     }
