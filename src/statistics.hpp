@@ -7,16 +7,16 @@
 namespace statistics {
     struct statistics_t {
         unsigned int items {0};
-        unsigned long max {0};
-        unsigned long min {0};
-        double avg {0.0}; // mean
-        unsigned long med {0}; // median
-        double var {0.0}; // variance
-        double sd {0.0}; // standard deviation
-        unsigned int sd1 {0}; // standard deviation item count
-        unsigned int sd2 {0}; // standard deviation item count
-        unsigned int sd3 {0}; // standard deviation item count
-        double se {0.0}; // standard error
+        unsigned long maximum {0};
+        unsigned long minimum {0};
+        double average {0.0}; // mean
+        unsigned long median {0};
+        double variance {0.0};
+        double standard_deviation {0.0};
+        unsigned int standard_deviation1 {0}; // standard deviation item count
+        unsigned int standard_deviation2 {0}; // standard deviation item count
+        unsigned int standard_deviation3 {0}; // standard deviation item count
+        double standard_error {0.0};
     };
 
     // TODO: static assert (list + numeric items)
@@ -33,38 +33,38 @@ namespace statistics {
 
         // Calculate statistics
         if (s.items  % 2 == 0)
-            s.med = (data_set[s.items / 2 - 1] + data_set[s.items / 2]) / 2;
+            s.median = (data_set[s.items / 2 - 1] + data_set[s.items / 2]) / 2;
         else
-            s.med = data_set[s.items / 2];
+            s.median = data_set[s.items / 2];
 
-        s.max = std::numeric_limits<unsigned long>::min();
-        s.min = std::numeric_limits<unsigned long>::max();
+        s.maximum = std::numeric_limits<unsigned long>::min();
+        s.minimum = std::numeric_limits<unsigned long>::max();
         for (const auto &item: data_set) {
-            if (item < s.min)
-                s.min = item;
-            if (item > s.max)
-                s.max = item;
-            s.avg += item;
+            if (item < s.minimum)
+                s.minimum = item;
+            if (item > s.maximum)
+                s.maximum = item;
+            s.average += item;
         }
-        s.avg /= s.items;
-
-        for (const auto &item: data_set) {
-            s.var += std::pow(item - s.avg, 2);
-        }
-        s.var /= s.items;
-
-        s.sd = std::sqrt(s.var);
+        s.average /= s.items;
 
         for (const auto &item: data_set) {
-            if (item >= std::min(std::numeric_limits<double>::min(), s.avg - s.sd) && item <= (s.avg + s.sd))
-                s.sd1++;
-            if (item >= std::min(std::numeric_limits<double>::min(), s.avg - 2 * s.sd) && item <= (s.avg + 2 * s.sd))
-                s.sd2++;
-            if (item >= std::min(std::numeric_limits<double>::min(), s.avg - 3 * s.sd) && item <= (s.avg + 3 * s.sd))
-                s.sd3++;
+            s.variance += std::pow(item - s.average, 2);
+        }
+        s.variance /= s.items;
+
+        s.standard_deviation = std::sqrt(s.variance);
+
+        for (const auto &item: data_set) {
+            if (item >= std::min(std::numeric_limits<double>::min(), s.average - s.standard_deviation) && item <= (s.average + s.standard_deviation))
+                s.standard_deviation1++;
+            if (item >= std::min(std::numeric_limits<double>::min(), s.average - 2 * s.standard_deviation) && item <= (s.average + 2 * s.standard_deviation))
+                s.standard_deviation2++;
+            if (item >= std::min(std::numeric_limits<double>::min(), s.average - 3 * s.standard_deviation) && item <= (s.average + 3 * s.standard_deviation))
+                s.standard_deviation3++;
         }
 
-        s.se = (s.sd / 1000.0) / std::sqrt(s.items);
+        s.standard_error = (s.standard_deviation / 1000.0) / std::sqrt(s.items);
 
         return s;
     }
