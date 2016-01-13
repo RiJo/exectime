@@ -13,9 +13,6 @@ namespace statistics {
         unsigned long median {0};
         double variance {0.0};
         double standard_deviation {0.0};
-        unsigned int standard_deviation1 {0}; // standard deviation item count
-        unsigned int standard_deviation2 {0}; // standard deviation item count
-        unsigned int standard_deviation3 {0}; // standard deviation item count
         double standard_error {0.0};
     };
 
@@ -54,16 +51,6 @@ namespace statistics {
         s.variance /= s.items;
 
         s.standard_deviation = std::sqrt(s.variance);
-
-        for (const auto &item: data_set) {
-            if (item >= std::min(std::numeric_limits<double>::min(), s.average - s.standard_deviation) && item <= (s.average + s.standard_deviation))
-                s.standard_deviation1++;
-            if (item >= std::min(std::numeric_limits<double>::min(), s.average - 2 * s.standard_deviation) && item <= (s.average + 2 * s.standard_deviation))
-                s.standard_deviation2++;
-            if (item >= std::min(std::numeric_limits<double>::min(), s.average - 3 * s.standard_deviation) && item <= (s.average + 3 * s.standard_deviation))
-                s.standard_deviation3++;
-        }
-
         s.standard_error = (s.standard_deviation / 1000.0) / std::sqrt(s.items);
 
         return s;
