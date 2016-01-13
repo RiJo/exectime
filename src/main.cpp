@@ -1,4 +1,5 @@
 #include "exectime.hpp"
+#include "statistics.hpp"
 #include "console.hpp"
 
 #include <iostream>
@@ -6,7 +7,6 @@
 #include <vector>
 #include <future>
 #include <algorithm>
-#include <cmath>
 #include <chrono>
 
 void print_usage() {
@@ -150,79 +150,46 @@ int main(int argc, const char *argv[]) {
 #endif
     }
 
-    size_t size = execution_times.size();
-    if (size == 0) {
+    if (execution_times.size() == 0) {
         std::cerr << console::color::red << PROGRAM_NAME << ": No time measurements generated" << console::color::reset << std::endl;
         return 2;
     }
 
-    // Preprocess data set
-    std::sort(execution_times.begin(), execution_times.end());
-
-    // Calculate statistics
-    unsigned long max {std::numeric_limits<unsigned long>::min()};
-    unsigned long min {std::numeric_limits<unsigned long>::max()};
-    double avg {0}; // mean
-    double var {0}; // variance
-    double sd {0}; // standard deviation
-    unsigned int sd1 {0}; // standard deviation item count
-    unsigned int sd2 {0}; // standard deviation item count
-    unsigned int sd3 {0}; // standard deviation item count
-    double se {0}; // standard error
-
-    unsigned long med {0}; // median
-    if (size  % 2 == 0)
-        med = (execution_times[size / 2 - 1].count() + execution_times[size / 2].count()) / 2;
-    else
-        med = execution_times[size / 2].count();
-
+    std::vector<unsigned long> foo;
     for (const auto &execution_time: execution_times) {
         unsigned long elapsed = execution_time.count();
-        if (elapsed < min)
-            min = elapsed;
-        if (elapsed > max)
-            max = elapsed;
-        avg += elapsed;
-    }
-    avg /= size;
-
-    for (const auto &execution_time: execution_times) {
-        unsigned long elapsed = execution_time.count();
-
-        var += std::pow(elapsed - avg, 2);
-    }
-    var /= size;
-
-    sd = std::sqrt(var);
-
-    for (const auto &execution_time: execution_times) {
-        unsigned long elapsed = execution_time.count();
-
-        if (elapsed >= std::min(std::numeric_limits<double>::min(), avg - sd) && elapsed <= (avg + sd))
-            sd1++;
-        if (elapsed >= std::min(std::numeric_limits<double>::min(), avg - 2 * sd) && elapsed <= (avg + 2 * sd))
-            sd2++;
-        if (elapsed >= std::min(std::numeric_limits<double>::min(), avg - 3 * sd) && elapsed <= (avg + 3 * sd))
-            sd3++;
+        foo.push_back(elapsed);
     }
 
-    se = (sd / 1000.0) / std::sqrt(size);
+    statistics::statistics_t s = statistics::calculate(foo);
+
+    double standard_deviation1 {0.0};
+    double standard_deviation2 {0.0};
+    double standard_deviation3 {0.0};
+    for (const auto &item: foo) {
+        if (item >= std::min(std::numeric_limits<double>::min(), s.average - s.standard_deviation) && item <= (s.average + s.standard_deviation))
+            standard_deviation1++;
+        if (item >= std::min(std::numeric_limits<double>::min(), s.average - 2 * s.standard_deviation) && item <= (s.average + 2 * s.standard_deviation))
+            standard_deviation2++;
+        if (item >= std::min(std::numeric_limits<double>::min(), s.average - 3 * s.standard_deviation) && item <= (s.average + 3 * s.standard_deviation))
+            standard_deviation3++;
+    }
 
     // Dump result
 #ifdef DEBUG
     std::cout << PROGRAM_NAME << ": cmd \"" << cmd << "\"" << std::endl;
 #endif
-    //std::cout << PROGRAM_NAME << ": minimum..........................." << (min / 1000.0) << "ms" << std::endl;
-    //std::cout << PROGRAM_NAME << ": maximum..........................." << (max / 1000.0) << "ms" << std::endl;
-    std::cout << PROGRAM_NAME << ": range............................." << ((max - min) / 1000.0) << "ms (" << (min / 1000.0) << "-" << (max / 1000.0) << "ms)" << std::endl;
-    std::cout << PROGRAM_NAME << ": average/mean......................" << (avg / 1000.0) << "ms" << std::endl;
-    std::cout << PROGRAM_NAME << ": median............................" << (med / 1000.0) << "ms" << std::endl;
-    //std::cout << PROGRAM_NAME << ": variance.........................." << (var / 1000.0) << std::endl;
-    std::cout << PROGRAM_NAME << ": std. deviation...................." << (sd / 1000.0) << "ms (" << ((avg - sd) / 1000.0) << "-" << ((avg + sd) / 1000.0) << "ms)" << std::endl;
-    std::cout << PROGRAM_NAME << ": norm. distr. mean±1σ (68.27%)....." << ((static_cast<double>(sd1) / size) * 100.0) << "% (" << sd1 << "/" << size << ")" << std::endl;
-    std::cout << PROGRAM_NAME << ":              mean±2σ (95.45%)....." << ((static_cast<double>(sd2) / size) * 100.0) << "% (" << sd2 << "/" << size << ")" << std::endl;
-    std::cout << PROGRAM_NAME << ":              mean±3σ (99.73%)....." << ((static_cast<double>(sd3) / size) * 100.0) << "% (" << sd3 << "/" << size << ")" << std::endl;
-    std::cout << PROGRAM_NAME << ": std. error........................" << se << std::endl;
+    //std::cout << PROGRAM_NAME << ": minimum..........................." << (s.minimum / 1000.0) << "ms" << std::endl;
+    //std::cout << PROGRAM_NAME << ": maximum..........................." << (s.maximum / 1000.0) << "ms" << std::endl;
+    std::cout << PROGRAM_NAME << ": range............................." << ((s.maximum - s.minimum) / 1000.0) << "ms (" << (s.minimum / 1000.0) << "-" << (s.maximum / 1000.0) << "ms)" << std::endl;
+    std::cout << PROGRAM_NAME << ": average/mean......................" << (s.average / 1000.0) << "ms" << std::endl;
+    std::cout << PROGRAM_NAME << ": median............................" << (s.median / 1000.0) << "ms" << std::endl;
+    //std::cout << PROGRAM_NAME << ": variance.........................." << (s.variance / 1000.0) << std::endl;
+    std::cout << PROGRAM_NAME << ": std. deviation...................." << (s.standard_deviation / 1000.0) << "ms (" << ((s.average - s.standard_deviation) / 1000.0) << "-" << ((s.average + s.standard_deviation) / 1000.0) << "ms)" << std::endl;
+    std::cout << PROGRAM_NAME << ": norm. distr. mean±1σ (68.27%)....." << ((static_cast<double>(standard_deviation1) / s.items) * 100.0) << "% (" << standard_deviation1 << "/" << s.items << ")" << std::endl;
+    std::cout << PROGRAM_NAME << ":              mean±2σ (95.45%)....." << ((static_cast<double>(standard_deviation2) / s.items) * 100.0) << "% (" << standard_deviation2 << "/" << s.items << ")" << std::endl;
+    std::cout << PROGRAM_NAME << ":              mean±3σ (99.73%)....." << ((static_cast<double>(standard_deviation3) / s.items) * 100.0) << "% (" << standard_deviation3 << "/" << s.items << ")" << std::endl;
+    std::cout << PROGRAM_NAME << ": std. error........................" << s.standard_error << std::endl;
 
 
     // TODO: render graph(s)
