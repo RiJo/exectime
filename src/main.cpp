@@ -120,18 +120,19 @@ int main(int argc, const char *argv[]) {
     }
     std::string cmd = join(command, " ");
 
-    std::vector<std::chrono::microseconds> execution_times;
+    using time_t = std::chrono::microseconds;
+    std::vector<time_t> execution_times;
 
     for (unsigned int iteration = 0; iteration < iterations; iteration++) {
 #ifdef DEBUG
         std::cout << PROGRAM_NAME <<  ": Iteration " << (iteration + 1) << "/" << iterations << std::endl;
 #endif
-        std::chrono::microseconds elapsed;
+        time_t elapsed;
         std::future<console::exec_result_t> future = std::async(std::launch::async, [&] {
             auto begin = std::chrono::high_resolution_clock::now();
             console::exec_result_t result = console::exec(cmd);
             auto end = std::chrono::high_resolution_clock::now();
-            elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end-begin);
+            elapsed = std::chrono::duration_cast<time_t>(end-begin);
             execution_times.push_back(elapsed);
             return  result;
 
@@ -155,7 +156,7 @@ int main(int argc, const char *argv[]) {
         return 2;
     }
 
-    std::function<unsigned long (const std::chrono::microseconds &)> selector = [] (const auto &value) { return value.count(); };
+    std::function<unsigned long (const time_t &)> selector = [] (const auto &value) { return value.count(); };
     statistics::statistics_t<unsigned long> s = statistics::calculate(execution_times, selector);
 
     double standard_deviation1 {0.0};
@@ -186,7 +187,6 @@ int main(int argc, const char *argv[]) {
     std::cout << PROGRAM_NAME << ":              mean±2σ (95.45%)....." << ((static_cast<double>(standard_deviation2) / s.items) * 100.0) << "% (" << standard_deviation2 << "/" << s.items << ")" << std::endl;
     std::cout << PROGRAM_NAME << ":              mean±3σ (99.73%)....." << ((static_cast<double>(standard_deviation3) / s.items) * 100.0) << "% (" << standard_deviation3 << "/" << s.items << ")" << std::endl;
     std::cout << PROGRAM_NAME << ": std. error........................" << s.standard_error << " (relative: " << ((s.standard_error / s.average) * 100) << "%)" << std::endl;
-
 
     // TODO: render graph(s)
     return 0;
