@@ -10,7 +10,7 @@ namespace statistics {
         unsigned long maximum {0};
         unsigned long minimum {0};
         double average {0.0}; // mean
-        unsigned long median {0};
+        double median {0.0};
         double variance {0.0};
         double standard_deviation {0.0};
         double standard_error {0.0};
@@ -30,7 +30,7 @@ namespace statistics {
 
         // Calculate statistics
         if (s.items  % 2 == 0)
-            s.median = (data_set[s.items / 2 - 1] + data_set[s.items / 2]) / 2;
+            s.median = (data_set[s.items / 2 - 1] + data_set[s.items / 2]) / 2.0;
         else
             s.median = data_set[s.items / 2];
 
