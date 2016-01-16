@@ -7,7 +7,7 @@ Console tool which executes a specific command while measuring execution time. T
 Current stable version: v0.0.1.
 
 ## Background
-To be able to test performance of dus ([link](https://github.com/RiJo/dus)) in parallel mode I was missing a quick and easy tool to calculate statistics of time consumed by a single application. Previously I was using bash's built-in `time` command. But I had to summarize the statistics (standard deviation etc) by myself and it's pretty cumbersome. Why do the math by oneself when the computer makes it faster and more consistently?
+To be able to test performance of [dus](https://github.com/RiJo/dus) in parallel mode I was missing a quick and easy tool to calculate statistics of time consumed by a single application. Previously I was using bash's built-in `time` command. But I had to summarize the statistics (standard deviation etc) by myself and it's pretty cumbersome. Why do the math by oneself when the computer makes it faster and more consistently?
 
 The intention is to also make this program a regression testing tool. One should be able to save the statistics from one run (old version) and compare it to another one (new version) to see if there's any difference in execution performance.
 
