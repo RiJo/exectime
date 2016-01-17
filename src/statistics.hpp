@@ -8,7 +8,7 @@
 namespace statistics {
     template<typename T>
     struct statistics_t {
-        unsigned int items {0};
+        unsigned int sample_size {0};
         T maximum {0};
         T minimum {0};
         T range {0};
@@ -20,12 +20,13 @@ namespace statistics {
     };
 
     // TODO: static assert (list + numeric items)
+    // TODO: make selector parameter optional (nullptr as default value?)
     template<typename TContainer, typename TItem, typename TValue>
     statistics_t<TValue> calculate(const TContainer &data_set, std::function<TValue (const TItem &)> selector) {
         statistics_t<TValue> s;
 
-        s.items = data_set.size();
-        if (s.items == 0)
+        s.sample_size = data_set.size();
+        if (s.sample_size == 0)
             return s;
 
         // Convert data set
@@ -35,10 +36,10 @@ namespace statistics {
         std::sort(values.begin(), values.end());
 
         // Calculate statistics
-        if (s.items  % 2 == 0)
-            s.median = (values[s.items / 2 - 1] + values[s.items / 2]) / 2.0;
+        if (s.sample_size  % 2 == 0)
+            s.median = (values[s.sample_size / 2 - 1] + values[s.sample_size / 2]) / 2.0;
         else
-            s.median = values[s.items / 2];
+            s.median = values[s.sample_size / 2];
 
         s.maximum = std::numeric_limits<unsigned long>::min();
         s.minimum = std::numeric_limits<unsigned long>::max();
@@ -49,16 +50,16 @@ namespace statistics {
                 s.maximum = value;
             s.average += value;
         }
-        s.average /= s.items;
+        s.average /= s.sample_size;
         s.range = s.maximum - s.minimum;
 
         for (const TValue &value: values) {
             s.variance += std::pow(value - s.average, 2);
         }
-        s.variance /= s.items;
+        s.variance /= s.sample_size;
 
         s.standard_deviation = std::sqrt(s.variance);
-        s.standard_error = s.standard_deviation / std::sqrt(s.items);
+        s.standard_error = s.standard_deviation / std::sqrt(s.sample_size);
 
         return s;
     }
