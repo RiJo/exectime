@@ -183,9 +183,9 @@ int main(int argc, const char *argv[]) {
     std::cout << PROGRAM_NAME << ": median............................" << (s.median / 1000.0) << "ms" << std::endl;
     //std::cout << PROGRAM_NAME << ": variance.........................." << (s.variance / 1000.0) << std::endl;
     std::cout << PROGRAM_NAME << ": std. deviation...................." << (s.standard_deviation / 1000.0) << "ms (" << ((s.average - s.standard_deviation) / 1000.0) << "-" << ((s.average + s.standard_deviation) / 1000.0) << "ms)" << std::endl;
-    std::cout << PROGRAM_NAME << ": norm. distr. mean±1σ (68.27%)....." << ((static_cast<double>(standard_deviation1) / s.items) * 100.0) << "% (" << standard_deviation1 << "/" << s.items << ")" << std::endl;
-    std::cout << PROGRAM_NAME << ":              mean±2σ (95.45%)....." << ((static_cast<double>(standard_deviation2) / s.items) * 100.0) << "% (" << standard_deviation2 << "/" << s.items << ")" << std::endl;
-    std::cout << PROGRAM_NAME << ":              mean±3σ (99.73%)....." << ((static_cast<double>(standard_deviation3) / s.items) * 100.0) << "% (" << standard_deviation3 << "/" << s.items << ")" << std::endl;
+    std::cout << PROGRAM_NAME << ": norm. distr. mean±1σ (68.27%)....." << ((static_cast<double>(standard_deviation1) / s.sample_size) * 100.0) << "% (" << standard_deviation1 << "/" << s.sample_size << ")" << std::endl;
+    std::cout << PROGRAM_NAME << ":              mean±2σ (95.45%)....." << ((static_cast<double>(standard_deviation2) / s.sample_size) * 100.0) << "% (" << standard_deviation2 << "/" << s.sample_size << ")" << std::endl;
+    std::cout << PROGRAM_NAME << ":              mean±3σ (99.73%)....." << ((static_cast<double>(standard_deviation3) / s.sample_size) * 100.0) << "% (" << standard_deviation3 << "/" << s.sample_size << ")" << std::endl;
     std::cout << PROGRAM_NAME << ": std. error........................" << s.standard_error << " (relative: " << ((s.standard_error / s.average) * 100) << "%)" << std::endl;
 
     // TODO: render graph(s)
