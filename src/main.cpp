@@ -3,6 +3,7 @@
 #include "console.hpp"
 
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
 #include <future>
@@ -14,10 +15,12 @@ void print_usage() {
     std::cout << std::endl;
     std::cout << "Execute a given command and measure the time consumed." << std::endl;
     std::cout << std::endl;
-    std::cout << "  --color     Colorized output for easier interpretation." << std::endl;
-    std::cout << "  --help      Print this help and exit." << std::endl;
-    std::cout << "  -i <x>      Number of iterations to execute the command. Default is 1." << std::endl;
-    std::cout << "  --version   Print out version information." << std::endl;
+    std::cout << "  --cmp-stdout          Enable stdout comparison per iteration. If stdout differ then fail execution." << std::endl;
+    std::cout << "  --color               Colorized output for easier interpretation." << std::endl;
+    std::cout << "  --help                Print this help and exit." << std::endl;
+    std::cout << "  -i <x>                Number of iterations to execute the command. Default is 1." << std::endl;
+    std::cout << "  --ref-stdout=<file>   Enable stdout reference comparison to file contents. If stdout differ then fail execution." << std::endl;
+    std::cout << "  --version             Print out version information." << std::endl;
     std::cout << std::endl;
     std::cout << "                  Copyright (C) " PROGRAM_YEAR ". Licensed under " PROGRAM_LICENSE "." << std::endl;
 }
@@ -54,6 +57,8 @@ int main(int argc, const char *argv[]) {
     std::vector<std::string> command;
     bool colorize {false};
     unsigned int iterations {1};
+    bool stdout_compare {false};
+    std::string stdout_reference {""};
     bool skip_next_arg {false};
     bool command_detected {false};
 
@@ -80,6 +85,13 @@ int main(int argc, const char *argv[]) {
         }
         else if(arg.key == "--color") {
             colorize = true;
+        }
+        else if (arg.key == "--cmp-stdout") {
+            stdout_compare = true;
+        }
+        else if (arg.key == "--ref-stdout") {
+            std::ifstream ifs (arg.value);
+            getline (ifs, stdout_reference, (char) ifs.eof());
         }
         else if (arg.key == "-i" && arg.next) {
             int temp = std::stoi(arg.next->key); // TODO: sanity check
@@ -140,6 +152,19 @@ int main(int argc, const char *argv[]) {
 
         future.wait();
         console::exec_result_t result { future.get() };
+
+        if (stdout_compare) {
+            if (stdout_reference.size() == 0)
+                stdout_reference = result.stdout;
+            else if (result.stdout != stdout_reference) {
+                std::cerr << console::color::red << PROGRAM_NAME << ": stdout comparison failed." << console::color::reset << std::endl;
+                std::cerr << console::color::red << PROGRAM_NAME << ":     expected:" << console::color::reset << std::endl;
+                std::cerr << stdout_reference << std::endl;
+                std::cerr << console::color::red << PROGRAM_NAME << ":     actual:" << console::color::reset << std::endl;
+                std::cerr << result.stdout << std::endl;
+                return 42;
+            }
+        }
 
 #ifdef DEBUG
         std::cout << PROGRAM_NAME << ": Execution completed with code " << result.exit_code << ", took " << (elapsed.count() / 1000.0) << "ms" << std::endl;
