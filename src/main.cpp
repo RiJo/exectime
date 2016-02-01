@@ -167,7 +167,7 @@ int main(int argc, const char *argv[]) {
                 std::cerr << stdout_reference << std::endl;
                 std::cerr << console::color::red << PROGRAM_NAME << ":     actual:" << console::color::reset << std::endl;
                 std::cerr << result.stdout << std::endl;
-                return 42;
+                return 2;
             }
         }
 
@@ -183,7 +183,7 @@ int main(int argc, const char *argv[]) {
 
     if (execution_times.size() == 0) {
         std::cerr << console::color::red << PROGRAM_NAME << ": No time measurements generated" << console::color::reset << std::endl;
-        return 2;
+        return 3;
     }
 
     std::function<unsigned long (const time_resolution_t &)> selector = [] (const auto &value) { return value.count(); };
