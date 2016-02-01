@@ -2,6 +2,7 @@
 #include "statistics.hpp"
 #include "console.hpp"
 
+#include <stdexcept>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -52,6 +53,18 @@ std::string join(const T &list, const std::string delimiter) {
     return result;
 }
 
+std::string get_file_contents(const std::string &filename) {
+    std::stringstream content;
+    std::ifstream stream(filename);
+    if (!stream.is_open())
+        throw std::runtime_error("Failed to open file for reading: " + filename);
+
+    while (stream.peek() != EOF)
+        content << (char) stream.get();
+    stream.close();
+    return content.str();
+}
+
 int main(int argc, const char *argv[]) {
     // Parse arguments
     std::vector<std::string> command;
@@ -91,9 +104,13 @@ int main(int argc, const char *argv[]) {
             stdout_compare = true;
         }
         else if (arg.key == "--ref-stdout") {
-            std::ifstream ifs (arg.value);
-            getline (ifs, stdout_reference, (char) ifs.eof());
-            stdout_ref_set = true;
+            try {
+                stdout_reference = get_file_contents(arg.value);
+                stdout_ref_set = true;
+            }
+            catch (const std::exception &e) {
+                std::cerr << console::color::red << PROGRAM_NAME << ": --ref-stdout exception: " << e.what() << console::color::reset << std::endl;
+            }
         }
         else if (arg.key == "-i" && arg.next) {
             int temp = std::stoi(arg.next->key); // TODO: sanity check
