@@ -58,6 +58,7 @@ int main(int argc, const char *argv[]) {
     bool colorize {false};
     unsigned int iterations {1};
     bool stdout_compare {false};
+    bool stdout_ref_set {false};
     std::string stdout_reference {""};
     bool skip_next_arg {false};
     bool command_detected {false};
@@ -92,6 +93,7 @@ int main(int argc, const char *argv[]) {
         else if (arg.key == "--ref-stdout") {
             std::ifstream ifs (arg.value);
             getline (ifs, stdout_reference, (char) ifs.eof());
+            stdout_ref_set = true;
         }
         else if (arg.key == "-i" && arg.next) {
             int temp = std::stoi(arg.next->key); // TODO: sanity check
@@ -153,9 +155,12 @@ int main(int argc, const char *argv[]) {
         future.wait();
         console::exec_result_t result { future.get() };
 
-        if (stdout_compare) {
-            if (stdout_reference.size() == 0)
+        if (stdout_ref_set || stdout_compare) {
+            if (!stdout_ref_set) {
+                // Use first iteration's stdout as reference
                 stdout_reference = result.stdout;
+                stdout_ref_set = true;
+            }
             else if (result.stdout != stdout_reference) {
                 std::cerr << console::color::red << PROGRAM_NAME << ": stdout comparison failed." << console::color::reset << std::endl;
                 std::cerr << console::color::red << PROGRAM_NAME << ":     expected:" << console::color::reset << std::endl;
