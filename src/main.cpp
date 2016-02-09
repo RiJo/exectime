@@ -1,5 +1,6 @@
 #include "exectime.hpp"
 #include "statistics.hpp"
+#include "process.hpp"
 #include "console.hpp"
 
 #include <stdexcept>
@@ -149,7 +150,6 @@ int main(int argc, const char *argv[]) {
         std::cerr << console::color::red << PROGRAM_NAME << ": No command given" << console::color::reset << std::endl;
         return 1;
     }
-    std::string cmd = join(command, " ");
 
     using time_resolution_t = std::chrono::microseconds;
     std::vector<time_resolution_t> execution_times;
@@ -159,9 +159,9 @@ int main(int argc, const char *argv[]) {
         std::cout << PROGRAM_NAME <<  ": Iteration " << (iteration + 1) << "/" << iterations << std::endl;
 #endif
         time_resolution_t elapsed;
-        std::future<console::exec_result_t> future = std::async(std::launch::async, [&] {
+        std::future<process::exec_result_t> future = std::async(std::launch::async, [&] {
             auto begin = std::chrono::high_resolution_clock::now();
-            console::exec_result_t result = console::exec(cmd);
+            process::exec_result_t result = process::run(command);
             auto end = std::chrono::high_resolution_clock::now();
             elapsed = std::chrono::duration_cast<time_resolution_t>(end-begin);
             execution_times.push_back(elapsed);
@@ -170,7 +170,7 @@ int main(int argc, const char *argv[]) {
         });
 
         future.wait();
-        console::exec_result_t result { future.get() };
+        process::exec_result_t result { future.get() };
 
         if (stdout_ref_set || stdout_compare) {
             if (!stdout_ref_set) {
@@ -193,8 +193,10 @@ int main(int argc, const char *argv[]) {
 #endif
 
 #ifdef DEBUG
-        std::cout << PROGRAM_NAME << ": Output" << std::endl;
+        std::cout << PROGRAM_NAME << ": stdout" << std::endl;
         std::cout << result.stdout << std::endl;
+        std::cout << PROGRAM_NAME << ": stderr" << std::endl;
+        std::cout << result.stderr << std::endl;
 #endif
     }
 
@@ -221,6 +223,7 @@ int main(int argc, const char *argv[]) {
 
     // Dump result
 #ifdef DEBUG
+    std::string cmd = join(command, " ");
     std::cout << PROGRAM_NAME << ": cmd \"" << cmd << "\"" << std::endl;
 #endif
     //std::cout << PROGRAM_NAME << ": minimum..........................." << (s.minimum / 1000.0) << "ms" << std::endl;

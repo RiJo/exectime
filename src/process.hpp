@@ -1,30 +1,16 @@
 #ifndef __PROCESS_HPP_INCLUDED__
 #define __PROCESS_HPP_INCLUDED__
 
+#include "pipes.hpp"
+
 #include <stdexcept>
-
-// fork()
 #include <iostream>
-#include <sstream>
+#include <vector>
 #include <string>
-// Required by for routine
-#include <sys/types.h>
-#include <unistd.h> // dup2()
-//#include <stdlib.h> // exit()
 
-//
-
-#include <sys/wait.h>
-
-//
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
+#include <unistd.h> // close(), fork(), execv(), dup2(), STDOUT_FILENO, STDERR_FILENO
+#include <sys/wait.h> // waitpid()
+#include <string.h> // strdup()
 
 namespace process {
     struct exec_result_t {
@@ -54,31 +40,10 @@ namespace process {
     }
 #endif
 
-    // TODO: use pipes::read(int): move to pipes.hpp!
-    std::string read_pipe(const int fd) {
-        FILE *fp = fdopen(fd, "r");
-        if (fp == nullptr)
-            throw std::runtime_error("Failed to open pipe for reading");
+    exec_result_t run(const std::vector<std::string> &command) {
+        if (command.size() == 0)
+            throw std::runtime_error("No command given");
 
-        std::stringstream ss;
-        char buffer[32];
-        while (!feof(fp)) {
-            if (fgets(buffer, 32, fp) == nullptr)
-                continue;
-            ss << buffer;
-        }
-
-        //~ int ch;
-        //~ while ((ch = getc(fp)) != EOF)
-            //~ putc(ch, stdout);
-
-        //~ fflush(stdout);
-        fclose(fp);
-        fp = nullptr;
-        return ss.str();
-    }
-
-    exec_result_t run(const std::string &command) {
         int fd_stdout[2]; // [0]=read, [1]=write
         if (pipe(fd_stdout) != 0)
             throw std::runtime_error("pipe() stdout:" + std::to_string(errno));
@@ -89,7 +54,7 @@ namespace process {
 
         pid_t pid = fork(); // TODO: use vfork() instead?
         if (pid < 0)
-            throw std::runtime_error("fork(): " + command);
+            throw std::runtime_error("fork(): " + std::to_string(errno));
 
         bool is_parent = (pid > 0);
         if (is_parent) {
@@ -102,30 +67,38 @@ namespace process {
             if (ws != pid)
                 throw std::runtime_error("Failed to wait for pid " + std::to_string(pid));
 
-            std::string output_stdout = read_pipe(fd_stdout[0]);
+            std::string output_stdout = pipes::read_pipe(fd_stdout[0]);
             close(fd_stdout[0]);
 
-            std::string output_stderr = read_pipe(fd_stderr[0]);
+            std::string output_stderr = pipes::read_pipe(fd_stderr[0]);
             close(fd_stderr[0]);
 
             int exit_code = -1;
-            std::cout << "pid:" << pid << ", ws:" << ws << ", status:" << status << ", WEXITSTATUS(status):" << WEXITSTATUS(status) << ", errno:" << errno << std::endl;
             if (WIFEXITED(status)) {
-                //printf("exited, status=%d\n", WEXITSTATUS(status));
                 exit_code = WEXITSTATUS(status);
             }
+#ifdef DEBUG
             else if (WIFSIGNALED(status)) {
-                printf("killed by signal %d\n", WTERMSIG(status));
+                if (output_stderr.length() > 0)
+                    output_stderr += '\n';
+                output_stderr += "killed by signal %d\n", WTERMSIG(status);
             }
             else if (WIFSTOPPED(status)) {
-                printf("stopped by signal %d\n", WSTOPSIG(status));
+                if (output_stderr.length() > 0)
+                    output_stderr += '\n';
+                output_stderr += "stopped by signal %d\n", WSTOPSIG(status);
             }
             else if (WIFCONTINUED(status)) {
-                printf("continued\n");
+                if (output_stderr.length() > 0)
+                    output_stderr += '\n';
+                output_stderr += "continued\n";
             }
             else {
-                printf("unhandled\n");
+                if (output_stderr.length() > 0)
+                    output_stderr += '\n';
+                output_stderr += "unhandled exit status\n";
             }
+#endif
 
             return exec_result_t {exit_code, output_stdout, output_stderr};
         }
@@ -141,7 +114,12 @@ namespace process {
             close(fd_stderr[0]);
             close(fd_stderr[1]);
 
-            execl(command.c_str(), command.c_str(), "/tmp");
+            unsigned int i = 0;
+            char * exec_args[1024];
+            for (i = 0; i < command.size(); i++)
+               exec_args[i] = strdup(command[i].c_str());
+            exec_args[i] = '\0';
+            execv(command[0].c_str(), exec_args);
             throw std::runtime_error("execv(): " + std::to_string(errno));
         }
     }
