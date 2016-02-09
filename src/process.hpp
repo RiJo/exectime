@@ -81,12 +81,12 @@ namespace process {
             else if (WIFSIGNALED(status)) {
                 if (output_stderr.length() > 0)
                     output_stderr += '\n';
-                output_stderr += "killed by signal %d\n", WTERMSIG(status);
+                output_stderr += "killed by signal " + std::to_string(WTERMSIG(status)) + "\n";
             }
             else if (WIFSTOPPED(status)) {
                 if (output_stderr.length() > 0)
                     output_stderr += '\n';
-                output_stderr += "stopped by signal %d\n", WSTOPSIG(status);
+                output_stderr += "stopped by signal " + std::to_string(WSTOPSIG(status)) + "\n";
             }
             else if (WIFCONTINUED(status)) {
                 if (output_stderr.length() > 0)
@@ -114,11 +114,11 @@ namespace process {
             close(fd_stderr[0]);
             close(fd_stderr[1]);
 
-            unsigned int i = 0;
             char * exec_args[1024];
+            unsigned int i = 0;
             for (i = 0; i < command.size(); i++)
                exec_args[i] = strdup(command[i].c_str());
-            exec_args[i] = '\0';
+            exec_args[i + 1] = strdup("\0");
             execv(command[0].c_str(), exec_args);
             throw std::runtime_error("execv(): " + std::to_string(errno));
         }
