@@ -18,10 +18,12 @@ void print_usage() {
     std::cout << "Execute a given command and measure the time consumed." << std::endl;
     std::cout << std::endl;
     std::cout << "  --cmp-stdout          Enable stdout comparison per iteration. If stdout differ then fail execution." << std::endl;
+    std::cout << "  --cmp-stderr          Enable stderr comparison per iteration. If stderr differ then fail execution." << std::endl;
     std::cout << "  --color               Colorized output for easier interpretation." << std::endl;
     std::cout << "  --help                Print this help and exit." << std::endl;
     std::cout << "  -i <x>                Number of iterations to execute the command. Default is 1." << std::endl;
     std::cout << "  --ref-stdout=<file>   Enable stdout reference comparison to file contents. If stdout differ then fail execution." << std::endl;
+    std::cout << "  --ref-stderr=<file>   Enable stderr reference comparison to file contents. If stderr differ then fail execution." << std::endl;
     std::cout << "  --version             Print out version information." << std::endl;
     std::cout << std::endl;
     std::cout << "                  Copyright (C) " PROGRAM_YEAR ". Licensed under " PROGRAM_LICENSE "." << std::endl;
@@ -72,8 +74,11 @@ int main(int argc, const char *argv[]) {
     bool colorize {false};
     unsigned int iterations {1};
     bool stdout_compare {false};
+    bool stderr_compare {false};
     bool stdout_ref_set {false};
+    bool stderr_ref_set {false};
     std::string stdout_reference {""};
+    std::string stderr_reference {""};
     bool skip_next_arg {false};
     bool command_detected {false};
 
@@ -104,6 +109,9 @@ int main(int argc, const char *argv[]) {
         else if (arg.key == "--cmp-stdout") {
             stdout_compare = true;
         }
+        else if (arg.key == "--cmp-stderr") {
+            stderr_compare = true;
+        }
         else if (arg.key == "--ref-stdout") {
             try {
                 stdout_reference = get_file_contents(arg.value);
@@ -111,6 +119,15 @@ int main(int argc, const char *argv[]) {
             }
             catch (const std::exception &e) {
                 std::cerr << console::color::red << PROGRAM_NAME << ": --ref-stdout exception: " << e.what() << console::color::reset << std::endl;
+            }
+        }
+        else if (arg.key == "--ref-stderr") {
+            try {
+                stderr_reference = get_file_contents(arg.value);
+                stderr_ref_set = true;
+            }
+            catch (const std::exception &e) {
+                std::cerr << console::color::red << PROGRAM_NAME << ": --ref-stderr exception: " << e.what() << console::color::reset << std::endl;
             }
         }
         else if (arg.key == "-i" && arg.next) {
@@ -172,6 +189,7 @@ int main(int argc, const char *argv[]) {
         future.wait();
         process::exec_result_t result { future.get() };
 
+        bool cmp_output_fail {false};
         if (stdout_ref_set || stdout_compare) {
             if (!stdout_ref_set) {
                 // Use first iteration's stdout as reference
@@ -184,9 +202,26 @@ int main(int argc, const char *argv[]) {
                 std::cerr << stdout_reference << std::endl;
                 std::cerr << console::color::red << PROGRAM_NAME << ":     actual:" << console::color::reset << std::endl;
                 std::cerr << result.stdout << std::endl;
-                return 2;
+                cmp_output_fail = true;
             }
         }
+        if (stderr_ref_set || stderr_compare) {
+            if (!stderr_ref_set) {
+                // Use first iteration's stderr as reference
+                stderr_reference = result.stderr;
+                stderr_ref_set = true;
+            }
+            else if (result.stderr != stderr_reference) {
+                std::cerr << console::color::red << PROGRAM_NAME << ": stderr comparison failed." << console::color::reset << std::endl;
+                std::cerr << console::color::red << PROGRAM_NAME << ":     expected:" << console::color::reset << std::endl;
+                std::cerr << stderr_reference << std::endl;
+                std::cerr << console::color::red << PROGRAM_NAME << ":     actual:" << console::color::reset << std::endl;
+                std::cerr << result.stderr << std::endl;
+                cmp_output_fail = true;
+            }
+        }
+        if (cmp_output_fail)
+            return 2;
 
 #ifdef DEBUG
         std::cout << PROGRAM_NAME << ": Execution completed with code " << result.exit_code << ", took " << (elapsed.count() / 1000.0) << "ms" << std::endl;
