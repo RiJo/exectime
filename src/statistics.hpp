@@ -17,6 +17,7 @@ namespace statistics {
         double variance {0.0};
         double standard_deviation {0.0};
         double standard_error {0.0};
+        double relative_standard_error {0.0};
     };
 
     // TODO: static assert (list + numeric items)
@@ -60,6 +61,11 @@ namespace statistics {
 
         s.standard_deviation = std::sqrt(s.variance);
         s.standard_error = s.standard_deviation / std::sqrt(s.sample_size);
+        if (s.average == 0.0)
+            s.relative_standard_error = 1.0;
+        else
+            s.relative_standard_error = s.standard_error / s.average;
+        s.relative_standard_error *= 100.0;
 
         return s;
     }
