@@ -42,17 +42,14 @@ namespace statistics {
         else
             s.median = values[s.sample_size / 2];
 
-        s.maximum = std::numeric_limits<unsigned long>::min();
-        s.minimum = std::numeric_limits<unsigned long>::max();
-        for (const TValue &value: values) {
-            if (value < s.minimum)
-                s.minimum = value;
-            if (value > s.maximum)
-                s.maximum = value;
-            s.average += value;
-        }
-        s.average /= s.sample_size;
+        s.maximum = values.back();
+        s.minimum = values.front();
         s.range = s.maximum - s.minimum;
+
+        for (const TValue &value: values)
+            s.average += value;
+        s.average /= s.sample_size;
+
 
         for (const TValue &value: values) {
             s.variance += std::pow(value - s.average, 2);
