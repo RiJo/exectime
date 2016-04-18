@@ -271,7 +271,7 @@ int main(int argc, const char *argv[]) {
     std::cout << PROGRAM_NAME << ": norm. distr. mean±1σ (68.27%)....." << ((static_cast<double>(standard_deviation1) / s.sample_size) * 100.0) << "% (" << standard_deviation1 << "/" << s.sample_size << ")" << std::endl;
     std::cout << PROGRAM_NAME << ":              mean±2σ (95.45%)....." << ((static_cast<double>(standard_deviation2) / s.sample_size) * 100.0) << "% (" << standard_deviation2 << "/" << s.sample_size << ")" << std::endl;
     std::cout << PROGRAM_NAME << ":              mean±3σ (99.73%)....." << ((static_cast<double>(standard_deviation3) / s.sample_size) * 100.0) << "% (" << standard_deviation3 << "/" << s.sample_size << ")" << std::endl;
-    std::cout << PROGRAM_NAME << ": std. error........................" << s.standard_error << " (relative: " << ((s.standard_error / s.average) * 100) << "%)" << std::endl;
+    std::cout << PROGRAM_NAME << ": std. error........................" << s.standard_error << " (relative: " << s.relative_standard_error << "%)" << std::endl;
 
     // TODO: render graph(s)
     return 0;
