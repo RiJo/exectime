@@ -5,6 +5,7 @@
 #include <sstream>
 #include <string>
 #include <stdexcept>
+#include <vector>
 
 #include <sys/poll.h>
 #include <unistd.h> // STDIN_FILENO

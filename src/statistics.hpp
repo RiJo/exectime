@@ -4,6 +4,7 @@
 #include <functional>
 #include <algorithm>
 #include <cmath>
+#include <vector>
 
 namespace statistics {
     template<typename T>
