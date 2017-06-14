@@ -267,6 +267,7 @@ namespace console {
             switch (arg.length()) {
                 case 1:
                     args.emplace_back(arg_t{arg, "", nullptr});
+                    __attribute__((fallthrough));
                 case 0:
                     continue;
                 default:
