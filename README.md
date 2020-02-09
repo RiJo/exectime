@@ -22,7 +22,7 @@ The intention is to also make this program a regression testing tool. One should
     $ exectime -i 100 "find / -name 'foo'"
 
 ## Compilation
-Everything is written in C++14 and is simply compiled, installed and uninstalled using make.
+Everything is written in C++17 and is simply compiled, installed and uninstalled using make.
 
 ## Releases
 ### v0.0.1

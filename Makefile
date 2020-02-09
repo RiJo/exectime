@@ -3,7 +3,7 @@ SOURCES = $(wildcard src/*.cpp)
 HEADERS = $(wildcard src/*.hpp)
 
 CXX      ?= g++
-CXXFLAGS += -std=c++14 -Wall -Werror -Wextra -Wpedantic -Wshadow -pthread
+CXXFLAGS += -std=c++17 -Wall -Werror -Wextra -Wpedantic -Wshadow -pthread
 LDLIBS   += 
 
 INSTALL     ?= install
